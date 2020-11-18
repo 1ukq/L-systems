@@ -15,3 +15,19 @@ type position = {
 }
 
 (** Put here any type and function signatures concerning turtle *)
+
+val create_window : int -> int -> unit
+
+val close_after_event : unit -> unit
+
+val conv_deg_rad : float
+
+val convert_angle : int -> (float * float)
+
+val get_next_pos : position -> int -> int -> int -> position
+
+val get_scaled_coord : position -> int -> (int * int)
+
+val draw : position -> (command list) -> int -> unit
+
+val visualize : unit -> unit

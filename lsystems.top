@@ -6,7 +6,7 @@
    - Ensuite, lancer: ocaml -init lsystems.top
      Ou peut-être même directement ./lsystems.top
 *)
-
+#load "graphics.cma"
 #directory "_build/default/";;
 #directory "_build/default/.lsystems.objs";;
 #directory "_build/default/.lsystems.objs/byte";;
@@ -15,7 +15,6 @@ let () = print_string "Lsystems modules loaded.\n\n"
 open Lsystems
 
 (* Si vous le souhaitez: *)
-(* #load "graphics.cma" *)
 (* #use "main.ml" *)
 
 (* NB : with a recent dune and utop, just do instead: dune utop
