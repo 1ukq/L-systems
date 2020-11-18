@@ -28,4 +28,6 @@ val get_next_pos : position -> int -> int -> int -> position
 
 val get_scaled_coord : position -> int -> (int * int)
 
-val show : unit -> unit
+val show : command list -> unit
+
+val test : unit -> unit

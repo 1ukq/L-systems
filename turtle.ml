@@ -22,7 +22,8 @@ let create_window w h =
 ;;
 
 let close_after_event () =
-  ignore (wait_next_event [Button_down ; Key_pressed])
+  ignore (wait_next_event [Button_down ; Key_pressed]);
+  close_graph ();
 ;;
 
 let conv_deg_rad = 3.14 /. 180.;;
@@ -49,19 +50,12 @@ let get_scaled_coord pos scale =
 ;;
 
 
-let show () =
+let show cmd_list =
   let scale = 800 in
   create_window scale scale;
   clear_graph ();
 
-  let f = Line 100 in
-  let p = Turn 45 in
-  let m = Turn (-45) in
-  let s = Store in
-  let r = Restore in
-
   let pos = {x = 0.5; y = 0.1; a = 0} in
-  let cmd_list = [f;s;p;f;r;s;f;s;p;f;r;m;f;r;m;f;f] in
   let stored_pos = Stack.create () in
   Stack.push pos stored_pos;
 
@@ -73,28 +67,41 @@ let show () =
     synchronize ();
     match cmd_list with
     | [] -> ()
-  | Line dist :: q ->
-    let npos = get_next_pos pos dist 0 scale in
-    let (scaled_x, scaled_y) = get_scaled_coord npos scale in
-    lineto scaled_x scaled_y;
-    parcours_liste q npos
-  | Move dist :: q ->
-    let npos = get_next_pos pos dist 0 scale in
-    let (scaled_x, scaled_y) = get_scaled_coord npos scale in
-    moveto scaled_x scaled_y;
-    parcours_liste q npos
-  | Turn angl :: q ->
-    let npos = get_next_pos pos 0 angl scale in
-    parcours_liste q npos
-  | Store :: q ->
-    Stack.push pos stored_pos;
-    parcours_liste q pos
-  | Restore :: q ->
-    let npos = Stack.pop stored_pos in
-    let (scaled_x, scaled_y) = get_scaled_coord npos scale in
-    moveto scaled_x scaled_y;
-    parcours_liste q npos
+    | Line dist :: q ->
+      let npos = get_next_pos pos dist 0 scale in
+      let (scaled_x, scaled_y) = get_scaled_coord npos scale in
+      lineto scaled_x scaled_y;
+      parcours_liste q npos
+    | Move dist :: q ->
+      let npos = get_next_pos pos dist 0 scale in
+      let (scaled_x, scaled_y) = get_scaled_coord npos scale in
+      moveto scaled_x scaled_y;
+      parcours_liste q npos
+    | Turn angl :: q ->
+      let npos = get_next_pos pos 0 angl scale in
+      parcours_liste q npos
+    | Store :: q ->
+      Stack.push pos stored_pos;
+      parcours_liste q pos
+    | Restore :: q ->
+      let npos = Stack.pop stored_pos in
+      let (scaled_x, scaled_y) = get_scaled_coord npos scale in
+      moveto scaled_x scaled_y;
+      parcours_liste q npos
   in parcours_liste cmd_list pos;
 
   close_after_event ()
+;;
+
+let test () =
+
+  let f = Line 100 in
+  let p = Turn 45 in
+  let m = Turn (-45) in
+  let s = Store in
+  let r = Restore in
+
+  let cmd_list = [f;s;p;f;r;s;f;s;p;f;r;m;f;r;m;f;f] in
+
+  show cmd_list
 ;;
