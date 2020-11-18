@@ -72,7 +72,7 @@ let show () =
     Unix.sleepf(0.05);
     synchronize ();
     match cmd_list with
-  | [] -> print_string "EOF\n"
+    | [] -> ()
   | Line dist :: q ->
     let npos = get_next_pos pos dist 0 scale in
     let (scaled_x, scaled_y) = get_scaled_coord npos scale in
