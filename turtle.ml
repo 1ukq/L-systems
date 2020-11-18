@@ -17,6 +17,7 @@ type position = {
 
 let create_window w h =
   open_graph (" " ^ string_of_int w ^ "x" ^ string_of_int h);
+  set_window_title "L-SYSTEMES   -   by Lucas & Luka";
   auto_synchronize false
 ;;
 
@@ -47,14 +48,30 @@ let get_scaled_coord pos scale =
   (x,y)
 ;;
 
-let draw pos cmd_list scale =
-  let (x,y) = get_scaled_coord pos scale in
-  moveto x y;
 
+let show () =
+  let scale = 800 in
+  create_window scale scale;
+  clear_graph ();
+
+  let f = Line 100 in
+  let p = Turn 45 in
+  let m = Turn (-45) in
+  let s = Store in
+  let r = Restore in
+
+  let pos = {x = 0.5; y = 0.1; a = 0} in
+  let cmd_list = [f;s;p;f;r;s;f;s;p;f;r;m;f;r;m;f;f] in
   let stored_pos = Stack.create () in
   Stack.push pos stored_pos;
 
-  let rec parcours_liste cmd_list pos = match cmd_list with
+  let (x,y) = get_scaled_coord pos scale in
+  moveto x y;
+
+  let rec parcours_liste cmd_list pos =
+    Unix.sleepf(0.05);
+    synchronize ();
+    match cmd_list with
   | [] -> print_string "EOF\n"
   | Line dist :: q ->
     let npos = get_next_pos pos dist 0 scale in
@@ -77,21 +94,7 @@ let draw pos cmd_list scale =
     let (scaled_x, scaled_y) = get_scaled_coord npos scale in
     moveto scaled_x scaled_y;
     parcours_liste q npos
-  in parcours_liste cmd_list pos
-;;
+  in parcours_liste cmd_list pos;
 
-
-
-let visualize () =
-  let scale = 800 in
-  create_window scale scale;
-  clear_graph ();
-  let f = Line 100 in
-  let p = Turn 45 in
-  let m = Turn (-45) in
-  let s = Store in
-  let r = Restore in
-  draw {x = 0.5; y = 0.1; a = 0} [f;s;p;f;r;s;f;s;p;f;r;m;f;r;m;f;f;r;r] scale;
-  synchronize ();
   close_after_event ()
 ;;
