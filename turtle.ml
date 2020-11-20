@@ -61,9 +61,10 @@ let show cmd_list =
 
   let (x,y) = get_scaled_coord pos scale in
   moveto x y;
+  set_line_width 2;
 
   let rec parcours_liste cmd_list pos =
-    Unix.sleepf(0.05);
+    Unix.sleepf(0.1);
     synchronize ();
     match cmd_list with
     | [] -> ()
@@ -95,13 +96,13 @@ let show cmd_list =
 
 let test () =
 
-  let f = Line 100 in
+  let f = Line 50 in
   let p = Turn 45 in
   let m = Turn (-45) in
   let s = Store in
   let r = Restore in
 
-  let cmd_list = [f;s;p;f;r;s;f;s;p;f;r;m;f;r;m;f;f] in
+  let cmd_list = [f;s;p;f;r;s;f;s;p;f;r;m;f;r;m;f;f;s;f;p;f;s;f;s;f;r;p;f] in
 
   show cmd_list
 ;;
