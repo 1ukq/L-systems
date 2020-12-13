@@ -15,6 +15,7 @@ type position = {
 
 (** Put here any type and function implementations concerning turtle *)
 
+(* Functions for graphics *)
 let create_window w h =
   open_graph (" " ^ string_of_int w ^ "x" ^ string_of_int h);
   set_window_title "L-SYSTEMES   -   by Lucas & Luka";
@@ -26,6 +27,8 @@ let close_after_event () =
   close_graph ();
 ;;
 
+
+(* Functions for angle conversion *)
 let conv_deg_rad = 3.14 /. 180.;;
 
 let convert_angle a =
@@ -34,6 +37,7 @@ let convert_angle a =
   ((-1.) *. sin rad_a, cos rad_a)
 ;;
 
+(* Function to get next position from current position: evolve with distance and angle  *)
 let get_next_pos pos dist angl scale =
   let unit_dist = (float_of_int dist)/.(float_of_int scale) in
   let (unit_x,unit_y) = convert_angle pos.a in
@@ -43,57 +47,72 @@ let get_next_pos pos dist angl scale =
   {x = nx; y = ny; a = na}
 ;;
 
+(* Function to get the scaled current position (scale from graphic window) *)
 let get_scaled_coord pos scale =
   let x = (int_of_float (pos.x *. (float_of_int scale))) in
   let y = (int_of_float (pos.y *. (float_of_int scale))) in
   (x,y)
 ;;
 
-
+(* Main function for Turtle, draw the lines on graphics from a list of command *)
 let show cmd_list =
+  (*create window & init graphics parameters*)
   let scale = 800 in
   create_window scale scale;
   clear_graph ();
+  set_line_width 2;
 
+  (*init first position & store position in a stack*)
   let pos = {x = 0.5; y = 0.1; a = 0} in
   let stored_pos = Stack.create () in
   Stack.push pos stored_pos;
 
+  (*bring cursor to the correct position on the window*)
   let (x,y) = get_scaled_coord pos scale in
   moveto x y;
-  set_line_width 2;
 
+  (*read the command list and draw command on window*)
   let rec parcours_liste cmd_list pos =
+    (*animation parameters*)
     Unix.sleepf(0.1);
     synchronize ();
+
+    (*read command list recursively & draw instructions*)
     match cmd_list with
     | [] -> ()
+
     | Line dist :: q ->
       let npos = get_next_pos pos dist 0 scale in
       let (scaled_x, scaled_y) = get_scaled_coord npos scale in
       lineto scaled_x scaled_y;
       parcours_liste q npos
+
     | Move dist :: q ->
       let npos = get_next_pos pos dist 0 scale in
       let (scaled_x, scaled_y) = get_scaled_coord npos scale in
       moveto scaled_x scaled_y;
       parcours_liste q npos
+
     | Turn angl :: q ->
       let npos = get_next_pos pos 0 angl scale in
       parcours_liste q npos
+
     | Store :: q ->
       Stack.push pos stored_pos;
       parcours_liste q pos
+
     | Restore :: q ->
       let npos = Stack.pop stored_pos in
       let (scaled_x, scaled_y) = get_scaled_coord npos scale in
       moveto scaled_x scaled_y;
       parcours_liste q npos
+
   in parcours_liste cmd_list pos;
 
   close_after_event ()
 ;;
 
+(* Test function for simple & easy verifications *)
 let test () =
 
   let f = Line 50 in
