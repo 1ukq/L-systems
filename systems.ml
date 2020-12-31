@@ -18,6 +18,7 @@ let rec concat_words word1 word2 = match word1 with
   |Symb s ->
   |Seq l ->
   |Branch w ->
+;;
 
 let rec get_ruled_word syst word n =
   if n = 0 then word
