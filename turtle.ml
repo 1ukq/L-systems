@@ -73,10 +73,6 @@ let show cmd_list =
 
   (*read the command list and draw command on window*)
   let rec parcours_liste cmd_list pos =
-    (*animation parameters*)
-    Unix.sleepf(0.1);
-    synchronize ();
-
     (*read command list recursively & draw instructions*)
     match cmd_list with
     | [] -> ()
@@ -85,6 +81,10 @@ let show cmd_list =
       let npos = get_next_pos pos dist 0 scale in
       let (scaled_x, scaled_y) = get_scaled_coord npos scale in
       lineto scaled_x scaled_y;
+      (*animation : only when drawing something*)
+      Unix.sleepf(0.01);
+      synchronize ();
+      
       parcours_liste q npos
 
     | Move dist :: q ->
