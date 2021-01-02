@@ -37,7 +37,7 @@ let convert_angle a =
   ((-1.) *. sin rad_a, cos rad_a)
 ;;
 
-(* Function to get next position from current position: evolve with distance and angle  *)
+(* Function to get next position from current position: evolve with distance and angle position should be in [0,1] range in order to stayin the drawing window *)
 let get_next_pos pos dist angl scale =
   let unit_dist = (float_of_int dist)/.(float_of_int scale) in
   let (unit_x,unit_y) = convert_angle pos.a in
@@ -55,15 +55,21 @@ let get_scaled_coord pos scale =
 ;;
 
 (* Main function for Turtle, draw the lines on graphics from a list of command *)
-let show cmd_list =
+let draw_cmd_list cmd_list fact first_pos =
   (*create window & init graphics parameters*)
-  let scale = 800 in
-  create_window scale scale;
+  let win_scale = 800 in
+  create_window win_scale win_scale;
   clear_graph ();
   set_line_width 2;
 
+  (*scale to fit draw to window*)
+  let scale = win_scale/fact in
+
+  (*animation parameters*)
+  let sleep = 6./.(float_of_int (List.length cmd_list)) in
+
   (*init first position & store position in a stack*)
-  let pos = {x = 0.5; y = 0.1; a = 0} in
+  let pos = first_pos in
   let stored_pos = Stack.create () in
   Stack.push pos stored_pos;
 
@@ -78,23 +84,23 @@ let show cmd_list =
     | [] -> ()
 
     | Line dist :: q ->
-      let npos = get_next_pos pos dist 0 scale in
+      let npos = get_next_pos pos dist 0 win_scale in
       let (scaled_x, scaled_y) = get_scaled_coord npos scale in
       lineto scaled_x scaled_y;
       (*animation : only when drawing something*)
-      Unix.sleepf(0.01);
       synchronize ();
-      
+      Unix.sleepf(sleep);
+
       parcours_liste q npos
 
     | Move dist :: q ->
-      let npos = get_next_pos pos dist 0 scale in
+      let npos = get_next_pos pos dist 0 win_scale in
       let (scaled_x, scaled_y) = get_scaled_coord npos scale in
       moveto scaled_x scaled_y;
       parcours_liste q npos
 
     | Turn angl :: q ->
-      let npos = get_next_pos pos 0 angl scale in
+      let npos = get_next_pos pos 0 angl win_scale in
       parcours_liste q npos
 
     | Store :: q ->
@@ -112,16 +118,64 @@ let show cmd_list =
   close_after_event ()
 ;;
 
-(* Test function for simple & easy verifications *)
-let test () =
 
-  let f = Line 50 in
-  let p = Turn 45 in
-  let m = Turn (-45) in
-  let s = Store in
-  let r = Restore in
+let get_extremum cmd_list =
+  let scale = 800 in
 
-  let cmd_list = [f;s;p;f;r;s;f;s;p;f;r;m;f;r;m;f;f;s;f;p;f;s;f;s;f;r;p;f] in
+  (*first position*)
+  let pos = {x = 0.5; y = 0.5; a = 0} in
+  let stored_pos = Stack.create () in
+  Stack.push pos stored_pos;
 
-  show cmd_list
+  (*init extremums*)
+  let l = ref pos.x in
+  let b = ref pos.y in
+  let r = ref pos.x in
+  let t = ref pos.y in
+
+  let rec parcours_liste cmd_list pos =
+    (*read command list recursively & search for extremums*)
+    match cmd_list with
+    | [] -> (!l,!r,!b,!t)
+
+    | Line dist :: q ->
+      (if pos.x < !l then
+         l := pos.x
+       else if pos.y < !b then
+         b := pos.y
+       else if pos.x > !r then
+         r := pos.x
+       else if pos.y > !t then
+         t := pos.y);
+      let npos = get_next_pos pos dist 0 scale in
+      parcours_liste q npos
+
+    | Move dist :: q ->
+      let npos = get_next_pos pos dist 0 scale in
+      parcours_liste q npos
+
+    | Turn angl :: q ->
+      let npos = get_next_pos pos 0 angl scale in
+      parcours_liste q npos
+
+    | Store :: q ->
+      Stack.push pos stored_pos;
+      parcours_liste q pos
+
+    | Restore :: q ->
+      let npos = Stack.pop stored_pos in
+      parcours_liste q npos
+
+  in parcours_liste cmd_list pos
+;;
+
+let show cmd_list =
+  if List.length cmd_list = 0 then failwith "liste vide"
+  else
+    (let (l,r,b,t) = get_extremum cmd_list in
+     let first_pos = {x = 0.5 -. l; y = 0.5 -. b; a = 0} in
+     (*utiliser des valeurs absolues??*)
+     let fact = int_of_float (max (r -. l) (t -. b)) in
+
+     draw_cmd_list cmd_list (fact+1) first_pos)
 ;;

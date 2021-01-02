@@ -31,3 +31,10 @@ let snow : symbol system =
        | P -> [Turn 60]
        | M -> [Turn (-60)])
   }
+;;
+
+(* Test function for snow *)
+let test n =
+  let cmd_list = get_cmd_list snow n in
+  show cmd_list
+;;

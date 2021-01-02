@@ -13,3 +13,5 @@ type symbol = A|P|M
 (* snow flake  - Figure 3 du sujet *)
 
 val snow : symbol Systems.system
+
+val test : int -> unit
