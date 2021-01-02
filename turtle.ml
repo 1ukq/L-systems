@@ -27,6 +27,9 @@ let close_after_event () =
   close_graph ();
 ;;
 
+(*window parameters*)
+let win_scale = 600;;
+
 
 (* Functions for angle conversion *)
 let conv_deg_rad = 3.14 /. 180.;;
@@ -57,7 +60,6 @@ let get_scaled_coord pos scale =
 (* Main function for Turtle, draw the lines on graphics from a list of command *)
 let draw_cmd_list cmd_list fact first_pos =
   (*create window & init graphics parameters*)
-  let win_scale = 800 in
   create_window win_scale win_scale;
   clear_graph ();
   set_line_width 2;
@@ -120,10 +122,8 @@ let draw_cmd_list cmd_list fact first_pos =
 
 
 let get_extremum cmd_list =
-  let scale = 800 in
-
   (*first position*)
-  let pos = {x = 0.5; y = 0.5; a = 0} in
+  let pos = {x = 0.; y = 0.; a = 0} in
   let stored_pos = Stack.create () in
   Stack.push pos stored_pos;
 
@@ -147,15 +147,15 @@ let get_extremum cmd_list =
          r := pos.x
        else if pos.y > !t then
          t := pos.y);
-      let npos = get_next_pos pos dist 0 scale in
+      let npos = get_next_pos pos dist 0 win_scale in
       parcours_liste q npos
 
     | Move dist :: q ->
-      let npos = get_next_pos pos dist 0 scale in
+      let npos = get_next_pos pos dist 0 win_scale in
       parcours_liste q npos
 
     | Turn angl :: q ->
-      let npos = get_next_pos pos 0 angl scale in
+      let npos = get_next_pos pos 0 angl win_scale in
       parcours_liste q npos
 
     | Store :: q ->
@@ -173,9 +173,10 @@ let show cmd_list =
   if List.length cmd_list = 0 then failwith "liste vide"
   else
     (let (l,r,b,t) = get_extremum cmd_list in
-     let first_pos = {x = 0.5 -. l; y = 0.5 -. b; a = 0} in
      (*utiliser des valeurs absolues??*)
-     let fact = int_of_float (max (r -. l) (t -. b)) in
+     let fact = (int_of_float (max (r -. l) (t -. b))) +1 in
+     (*first pos is hard to fin bc of multiple conversions?*)
+     let first_pos = {x = ((float_of_int fact) -. l -. r)/.2. ; y = ((float_of_int fact) -. b -. t)/.2.; a = 0} in
 
-     draw_cmd_list cmd_list (fact+1) first_pos)
+     draw_cmd_list cmd_list fact first_pos)
 ;;
