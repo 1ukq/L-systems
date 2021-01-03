@@ -22,8 +22,6 @@ val close_after_event : unit -> unit
 
 val win_scale : int
 
-val conv_deg_rad : float
-
 val convert_angle : int -> (float * float)
 
 val get_next_pos : position -> int -> int -> position
