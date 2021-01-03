@@ -65,14 +65,14 @@ let draw_cmd_list cmd_list fact first_pos =
   set_line_width 2;
 
   (*scale & marge pour que l'image soit au centre de la fenêtre*)
-  let marge = 100 in
-  let scale = (float_of_int (win_scale-marge)) /.fact in
+  let marge = 50 in
+  let scale = (float_of_int (win_scale-(2*marge))) /.fact in
 
   (*paramètres de l'animation, sleep varie en fonction de la taille de la liste pour avoir une vitesse adaptée*)
   let sleep = 6./.(float_of_int (List.length cmd_list)) in
 
   (*init first position & store position in a stack*)
-  let centering_val = (float_of_int (marge/2)) /. scale in
+  let centering_val = (float_of_int marge) /. scale in
   let pos = {x = first_pos.x +. centering_val; y = first_pos.y +. centering_val; a = first_pos.a} in
   let stored_pos = Stack.create () in
   Stack.push pos stored_pos;
