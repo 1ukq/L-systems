@@ -37,10 +37,10 @@ let conv_deg_rad = 3.14 /. 180.;;
 let convert_angle a =
   let angle_float = float_of_int a in
   let rad_a = angle_float *. conv_deg_rad in
-  ((-1.) *. sin rad_a, cos rad_a)
+  (-.(sin rad_a), cos rad_a)
 ;;
 
-(* Function to get next position from current position: evolve with distance and angle position should be in [0,1] range in order to stayin the drawing window *)
+(* Function to get next position from current position: evolve with distance and angle position should be in [0,1] range in order to stay in the drawing window *)
 let get_next_pos pos dist angl scale =
   let unit_dist = (float_of_int dist)/.(float_of_int scale) in
   let (unit_x,unit_y) = convert_angle pos.a in
@@ -176,7 +176,7 @@ let show cmd_list =
      (*utiliser des valeurs absolues??*)
      let fact = (int_of_float (max (r -. l) (t -. b))) +1 in
      (*first pos is hard to fin bc of multiple conversions?*)
-     let first_pos = {x = ((float_of_int fact) -. l -. r)/.2. ; y = ((float_of_int fact) -. b -. t)/.2.; a = 0} in
+     let first_pos = {x = -.l ; y = -.b ; a = 0} in
 
      draw_cmd_list cmd_list fact first_pos)
 ;;
