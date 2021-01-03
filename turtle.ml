@@ -15,7 +15,7 @@ type position = {
 
 (** Put here any type and function implementations concerning turtle *)
 
-(* Functions for graphics *)
+(*Functions for graphics*)
 let create_window w h =
   open_graph (" " ^ string_of_int w ^ "x" ^ string_of_int h);
   set_window_title "L-SYSTEMES   -   by Lucas & Luka";
@@ -28,10 +28,10 @@ let close_after_event () =
 ;;
 
 (*window parameters*)
-let win_scale = 600;;
+let win_scale = 700;;
 
 
-(* Functions for angle conversion *)
+(*value for angle conversion*)
 let conv_deg_rad = 3.14 /. 180.;;
 
 let convert_angle a =
@@ -41,37 +41,39 @@ let convert_angle a =
 ;;
 
 (* Function to get next position from current position: evolve with distance and angle position should be in [0,1] range in order to stay in the drawing window *)
-let get_next_pos pos dist angl scale =
-  let unit_dist = (float_of_int dist)/.(float_of_int scale) in
+let get_next_pos pos dist angl =
+  let float_dist = float_of_int dist in
   let (unit_x,unit_y) = convert_angle pos.a in
-  let nx = pos.x +. unit_x *. unit_dist in
-  let ny = pos.y +. unit_y *. unit_dist in
+  let nx = pos.x +. unit_x *. float_dist in
+  let ny = pos.y +. unit_y *. float_dist in
   let na = pos.a + angl in
   {x = nx; y = ny; a = na}
 ;;
 
 (* Function to get the scaled current position (scale from graphic window) *)
 let get_scaled_coord pos scale =
-  let x = (int_of_float (pos.x *. (float_of_int scale))) in
-  let y = (int_of_float (pos.y *. (float_of_int scale))) in
+  let x = (int_of_float (pos.x *. scale)) in
+  let y = (int_of_float (pos.y *. scale)) in
   (x,y)
 ;;
 
-(* Main function for Turtle, draw the lines on graphics from a list of command *)
+(*Cette fonction dessine la liste de commandes dans la fenêtre une fois que la bonne échelle est fourni*)
 let draw_cmd_list cmd_list fact first_pos =
   (*create window & init graphics parameters*)
   create_window win_scale win_scale;
   clear_graph ();
   set_line_width 2;
 
-  (*scale to fit draw to window*)
-  let scale = win_scale/fact in
+  (*scale & marge pour que l'image soit au centre de la fenêtre*)
+  let marge = 100 in
+  let scale = (float_of_int (win_scale-marge)) /.fact in
 
-  (*animation parameters*)
+  (*paramètres de l'animation, sleep varie en fonction de la taille de la liste pour avoir une vitesse adaptée*)
   let sleep = 6./.(float_of_int (List.length cmd_list)) in
 
   (*init first position & store position in a stack*)
-  let pos = first_pos in
+  let centering_val = (float_of_int (marge/2)) /. scale in
+  let pos = {x = first_pos.x +. centering_val; y = first_pos.y +. centering_val; a = first_pos.a} in
   let stored_pos = Stack.create () in
   Stack.push pos stored_pos;
 
@@ -86,7 +88,7 @@ let draw_cmd_list cmd_list fact first_pos =
     | [] -> ()
 
     | Line dist :: q ->
-      let npos = get_next_pos pos dist 0 win_scale in
+      let npos = get_next_pos pos dist 0 in
       let (scaled_x, scaled_y) = get_scaled_coord npos scale in
       lineto scaled_x scaled_y;
       (*animation : only when drawing something*)
@@ -96,13 +98,13 @@ let draw_cmd_list cmd_list fact first_pos =
       parcours_liste q npos
 
     | Move dist :: q ->
-      let npos = get_next_pos pos dist 0 win_scale in
+      let npos = get_next_pos pos dist 0 in
       let (scaled_x, scaled_y) = get_scaled_coord npos scale in
       moveto scaled_x scaled_y;
       parcours_liste q npos
 
     | Turn angl :: q ->
-      let npos = get_next_pos pos 0 angl win_scale in
+      let npos = get_next_pos pos 0 angl in
       parcours_liste q npos
 
     | Store :: q ->
@@ -120,7 +122,7 @@ let draw_cmd_list cmd_list fact first_pos =
   close_after_event ()
 ;;
 
-
+(*Cette fonction permet de récupérer les 4 extremums de la figure dessinée sur un plan en deux dimensions pour faciliter la mise en page de la fonction dans la fenêtre du dessin*)
 let get_extremum cmd_list =
   (*first position*)
   let pos = {x = 0.; y = 0.; a = 0} in
@@ -139,6 +141,7 @@ let get_extremum cmd_list =
     | [] -> (!l,!r,!b,!t)
 
     | Line dist :: q ->
+      (*Recherche des extremums: On ne s'interesse qu'aux points dessinés car ce sont ceux qu'on veut voir dans la fenêtre*)
       (if pos.x < !l then
          l := pos.x
        else if pos.y < !b then
@@ -147,15 +150,17 @@ let get_extremum cmd_list =
          r := pos.x
        else if pos.y > !t then
          t := pos.y);
-      let npos = get_next_pos pos dist 0 win_scale in
+      (*On continue l'algorithme normalement*)
+      let npos = get_next_pos pos dist 0 in
       parcours_liste q npos
 
+    (*Cette sous-partie n'a pas grand intérêt, elle nous permet s'implement d'accéder aux positions des prochains points*)
     | Move dist :: q ->
-      let npos = get_next_pos pos dist 0 win_scale in
+      let npos = get_next_pos pos dist 0 in
       parcours_liste q npos
 
     | Turn angl :: q ->
-      let npos = get_next_pos pos 0 angl win_scale in
+      let npos = get_next_pos pos 0 angl in
       parcours_liste q npos
 
     | Store :: q ->
@@ -169,14 +174,15 @@ let get_extremum cmd_list =
   in parcours_liste cmd_list pos
 ;;
 
+(*Fonction principale du fichier, elle permet de dessiner la liste de commandes donnée en argument, rend le dessin à la bonne échelle et fait en sorte qu'il s'affiche dans la fenêtre*)
 let show cmd_list =
   if List.length cmd_list = 0 then failwith "liste vide"
   else
     (let (l,r,b,t) = get_extremum cmd_list in
-     (*utiliser des valeurs absolues??*)
-     let fact = (int_of_float (max (r -. l) (t -. b))) +1 in
-     (*first pos is hard to fin bc of multiple conversions?*)
+     let fact = (max (r -. l) (t -. b)) in
+     (*first_pos permet jusau'ici uniquement d'avoir le dessin dans la fenêtre*)
      let first_pos = {x = -.l ; y = -.b ; a = 0} in
 
+     (*Fonction pour dessiner la liste de commandes*)
      draw_cmd_list cmd_list fact first_pos)
 ;;

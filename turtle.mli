@@ -26,11 +26,11 @@ val conv_deg_rad : float
 
 val convert_angle : int -> (float * float)
 
-val get_next_pos : position -> int -> int -> int -> position
+val get_next_pos : position -> int -> int -> position
 
-val get_scaled_coord : position -> int -> (int * int)
+val get_scaled_coord : position -> float -> (int * int)
 
-val draw_cmd_list : command list -> int -> position -> unit
+val draw_cmd_list : command list -> float -> position -> unit
 
 val get_extremum : command list -> (float * float * float * float)
 
