@@ -73,7 +73,8 @@ let draw_cmd_list cmd_list fact first_pos =
 
   (* paramètres de l'animation, sleep varie en fonction de la taille de la
      liste pour avoir une vitesse adaptée *)
-  let sleep = 6./.(float_of_int (List.length cmd_list)) in
+  let length = List.length cmd_list in
+  let sleep = 6./.(float_of_int length) in
 
   (* initialisation de la première position et ajout de celle-ci dans la pile *)
   let centering_val = (float_of_int marge) /. scale in
@@ -94,8 +95,9 @@ let draw_cmd_list cmd_list fact first_pos =
       let (scaled_x, scaled_y) = get_scaled_coord npos scale in
       lineto scaled_x scaled_y;
       (* animation : uniquement lorsqu'un dessin est fait *)
-      synchronize ();
-      Unix.sleepf(sleep);
+      if length < 100000 then
+        (synchronize ();
+         Unix.sleepf(sleep));
 
       parcours_liste q npos
 
@@ -121,6 +123,7 @@ let draw_cmd_list cmd_list fact first_pos =
 
   in parcours_liste cmd_list pos;
 
+  synchronize ();
   close_after_event ()
 ;;
 
