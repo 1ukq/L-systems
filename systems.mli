@@ -1,5 +1,4 @@
 (** Words, rewrite systems, and rewriting *)
-
 type 's word =
   | Symb of 's
   | Seq of 's word list
@@ -13,7 +12,6 @@ type 's system = {
     interp : 's -> Turtle.command list }
 
 (** Put here any type and function interfaces concerning systems *)
-val concat : 'a list -> 'a list -> 'a list
 
 val concat_words : 's word -> 's word -> 's word
 
