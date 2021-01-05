@@ -10,10 +10,17 @@ let explode str =
     in
     explode_aux (String.length str - 1) [];;
 
-let concat_words (w1 : 's word) (w2 : 's word) =
-    match w1 with
-        | Seq [] -> Seq [w2]
-        | _ -> Seq [w1; w2];;
+let rec concat_lists l1 l2 =
+    match l1 with
+        | [] -> l2
+        | x :: l' -> x :: (concat_lists l' l2);;
+
+let concat_words word1 word2 = match word1, word2 with
+  |Seq l1, Seq l2 -> Seq (concat l1 l2)
+  |Seq l, word2 -> Seq (concat l [word2])
+  |word1, Seq l -> Seq (word1::l)
+  |word1, word2 -> Seq [word1; word2];;
+
 
 let axiome ax =
     let rec axiome_aux l acc =
