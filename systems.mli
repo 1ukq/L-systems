@@ -12,11 +12,10 @@ type 's system = {
     interp : 's -> Turtle.command list }
 
 (** Put here any type and function interfaces concerning systems *)
+val draw : 's system -> 's word -> Turtle.position -> float -> Turtle.position
 
-val concat_words : 's word -> 's word -> 's word
+val show : 's system -> 's word -> int -> Turtle.position -> float -> Turtle.position
 
-val get_ruled_word : 's system -> 's word -> int -> 's word
+val get_extremum : 's system -> int -> float*float*float*float
 
-val interp_word : 's system -> 's word -> Turtle.command list
-
-val get_cmd_list : 's system -> int -> Turtle.command list
+val turtle : 's system -> int -> unit

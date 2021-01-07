@@ -1,5 +1,5 @@
+open Graphics
 open Turtle
-open Utils
 (** Words, rewrite systems, and rewriting *)
 
 type 's word =
@@ -15,54 +15,121 @@ type 's system = {
     interp : 's -> Turtle.command list }
 
 (** Put here any type and function implementations concerning systems *)
-
-(* Function to concatenate two words easier *)
-let concat_words word1 word2 = match word1, word2 with
-  |Seq l1, Seq l2 -> Seq (concat l1 l2)
-  |Seq l, word2 -> Seq (concat l [word2])
-  |word1, Seq l -> Seq (word1::l)
-  |word1, word2 -> Seq [word1; word2]
+let rec exec cmd_list pos scale = match cmd_list with
+    | [] -> pos
+    | Line dist :: q -> let npos = get_next_pos pos dist 0 in
+      let (scaled_x, scaled_y) = get_scaled_coord npos scale in
+      lineto scaled_x scaled_y;
+      Unix.sleepf(0.01);
+      synchronize ();
+      exec q npos scale
+    | Move dist :: q -> let npos = get_next_pos pos dist 0 in
+      let (scaled_x, scaled_y) = get_scaled_coord npos scale in
+      moveto scaled_x scaled_y;
+      exec q npos scale
+    | Turn angl :: q -> exec q (get_next_pos pos 0 angl) scale
+    | Store :: q -> exec q pos scale
+    | Restore :: q -> let (scaled_x, scaled_y) = get_scaled_coord pos scale in
+      moveto scaled_x scaled_y; exec q pos scale
 ;;
 
-(* Cette fonction permet de construire le 's word de la n-ième itération de word
-   partir de la loi de syst.rules *)
-let rec get_ruled_word syst word n =
-  if n = 0 then word
-  else
-    match word with
-    (* Dans ce cas là on applique directement la loi et on décrémente *)
-    |Symb s -> get_ruled_word syst (syst.rules s) (n-1)
-    (* Ici c'est une liste et comme on applique pas directement la loi,
-     on ne décrémente pas*)
-    |Seq l -> (match l with
-        (* En pratique l ne devrait jamais être vide*)
-        |[] -> failwith "Empty list in Seq"
-        |[t] -> get_ruled_word syst t n
-        |t::q ->
-          concat_words (get_ruled_word syst t n) (get_ruled_word syst (Seq q) n))
-    (* Pour une Branch, on garde l'idée de Branch en appliquant la loi
-    sur son contenu *)
-    |Branch w -> Branch (get_ruled_word syst w n)
+
+let rec draw syst word pos scale = match word with
+  | Symb s -> exec (syst.interp s) pos scale
+  | Seq l -> let rec aux l pos = match l with
+      |[] -> pos
+      |t::q -> let npos = (draw syst t pos scale) in
+        aux q npos
+    in aux l pos
+  | Branch w -> let npos = draw syst w pos scale in
+    exec [Restore] pos scale
 ;;
 
-(* Cette fonction permet de traduire un word en commandes pour turtle à partir
-de syst.interp *)
-let rec interp_word syst word = match word with
-  (* Pour un Symb on réalise directement l'interprétation *)
-  |Symb s -> syst.interp s
-  (* Pour une séquence, il faut d'abord la parcourir *)
-  |Seq l -> let rec parcours_liste l res = match l with
-    |[] -> res
-    |t::q -> parcours_liste q (concat (interp_word syst t) res)
-    in parcours_liste l []
-  (* Pour une branche, on explicite la branche en entourant l'interprétation de
-  son contenu par Store et Restore *)
-  |Branch w -> Store :: (concat (interp_word syst w) [Restore])
+let rec show syst word n pos scale =
+  if n = 0 then draw syst word pos scale
+  else (match word with
+      | Symb s -> show syst (syst.rules s) (n-1) pos scale
+      | Seq l -> (match l with
+          | [] -> failwith "sequence vide"
+          | [t] -> show syst t n pos scale
+          | t::q -> let last_pos = show syst t n pos scale in show syst (Seq q) n last_pos scale)
+      | Branch w -> let last_pos = show syst w n pos scale in exec [Restore] pos scale)
 ;;
 
-(* Fonction principale pour interpréter des 's system, celle-ci renvoie la liste
-des commandes pour turtle à l'itération n *)
-let get_cmd_list syst n =
-  if n < 0 then failwith "Invalid iteration number"
-  else interp_word syst (get_ruled_word syst syst.axiom n)
+let get_extremum syst n =
+
+  let pos = {x = 0.; y = 0.; a = 0} in
+
+  let l = ref pos.x in
+  let b = ref pos.y in
+  let r = ref pos.x in
+  let t = ref pos.y in
+
+  let rec draw_hidden syst word pos = match word with
+    | Symb s -> let rec parcours_liste wl pos = match wl with
+        | [] -> pos
+        | Line dist :: q ->
+        (if pos.x < !l then
+           l := pos.x
+         else if pos.y < !b then
+           b := pos.y
+         else if pos.x > !r then
+           r := pos.x
+         else if pos.y > !t then
+           t := pos.y);
+          let npos = get_next_pos pos dist 0 in
+          (if npos.x < !l then
+             l := npos.x
+           else if npos.y < !b then
+             b := npos.y
+           else if npos.x > !r then
+             r := npos.x
+           else if npos.y > !t then
+             t := npos.y);
+          parcours_liste q npos
+        | Move dist :: q -> let npos = get_next_pos pos dist 0 in
+          parcours_liste q npos
+        | Turn angl :: q -> parcours_liste q (get_next_pos pos 0 angl)
+        | _ :: q -> parcours_liste q pos
+      in parcours_liste (syst.interp s) pos
+    | Seq l -> let rec aux l pos = match l with
+        |[] -> pos
+        |t::q -> let npos = (draw_hidden syst t pos) in
+          aux q npos
+      in aux l pos
+    | Branch w -> pos
+  in
+  let rec iter syst word n pos =
+    if n = 0 then  draw_hidden syst word pos
+    else (match word with
+        | Symb s -> iter syst (syst.rules s) (n-1) pos
+        | Seq l -> (match l with
+            | [] -> failwith "sequence vide"
+            | [t] -> iter syst t n pos
+            | t::q -> let last_pos = iter syst t n pos in iter syst (Seq q) n last_pos)
+        | Branch w -> let last_pos = iter syst w n pos in pos)
+  in let last_pos = iter syst syst.axiom n pos
+
+  in (!l,!r,!b,!t)
+;;
+
+
+let turtle syst n =
+  let (l,r,b,t) = get_extremum syst n in
+  let fact = (max (r -. l) (t -. b)) in
+  let scale = (float_of_int win_scale)/.fact in
+  let first_pos = {x = -.l ; y = -.b ; a = 0} in
+
+  create_window win_scale win_scale;
+  clear_graph ();
+  set_line_width 2;
+
+  let (x,y) = get_scaled_coord first_pos scale in
+  moveto x y;
+
+  let last_pos = show syst syst.axiom n first_pos scale in
+
+  synchronize ();
+
+  close_after_event ()
 ;;

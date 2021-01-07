@@ -33,8 +33,29 @@ let snow : symbol system =
   }
 ;;
 
-(* Test function for snow *)
-let test n =
-  let cmd_list = get_cmd_list snow n in
-  show cmd_list
+type symbol_htree = A|B|C|P|M
+
+let htree : symbol_htree system =
+  let a = Symb A in
+  let b = Symb B in
+  let c = Symb C in
+  let p = Symb P in
+  let m = Symb M in
+  {
+    axiom = a;
+    rules =
+      (function
+        | A -> Seq [b; Branch (Seq [p;a]); m; a]
+        | B -> Seq [c;c]
+        | C -> b
+        | s -> Symb s);
+    interp =
+      (function
+        | A -> [Line 10]
+        | B -> [Line 14]
+        | C -> [Line 10]
+        | P -> [Turn 90]
+        | M -> [Turn (-90)])
+  }
 ;;
+

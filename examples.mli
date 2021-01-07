@@ -14,4 +14,7 @@ type symbol = A|P|M
 
 val snow : symbol Systems.system
 
-val test : int -> unit
+
+type symbol_htree = A|B|C|P|M
+
+val htree : symbol_htree Systems.system
