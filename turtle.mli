@@ -15,10 +15,11 @@ type position = {
 }
 
 (** Put here any type and function signatures concerning turtle *)
+val window_scale : int
+
+val marge : int
 
 val create_window : int -> int -> unit
-
-val close_after_event : unit -> unit
 
 val convert_angle : int -> (float * float)
 
