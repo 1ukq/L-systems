@@ -15,47 +15,35 @@ type 's system = {
     interp : 's -> Turtle.command list }
 
 (** Put here any type and function implementations concerning systems *)
-let rec exec cmd_list pos scale = match cmd_list with
-    | [] -> pos
-    | Line dist :: q -> let npos = get_next_pos pos dist 0 in
-      let (scaled_x, scaled_y) = get_scaled_coord npos scale in
-      lineto scaled_x scaled_y;
-      Unix.sleepf(0.01);
-      synchronize ();
-      exec q npos scale
-    | Move dist :: q -> let npos = get_next_pos pos dist 0 in
-      let (scaled_x, scaled_y) = get_scaled_coord npos scale in
-      moveto scaled_x scaled_y;
-      exec q npos scale
-    | Turn angl :: q -> exec q (get_next_pos pos 0 angl) scale
-    | Store :: q -> exec q pos scale
-    | Restore :: q -> let (scaled_x, scaled_y) = get_scaled_coord pos scale in
-      moveto scaled_x scaled_y; exec q pos scale
-;;
 
-
-let rec draw syst word pos scale = match word with
-  | Symb s -> exec (syst.interp s) pos scale
+(* Cette fonction permet de parcourir et de dessiner les commandes implicites du
+   word dans la fenetre (fait appelle à Turtle.exec) *)
+let rec exec syst word pos scale = match word with
+  | Symb s -> turtle (syst.interp s) pos scale
   | Seq l -> let rec aux l pos = match l with
       |[] -> pos
-      |t::q -> let npos = (draw syst t pos scale) in
+      |t::q -> let npos = (exec syst t pos scale) in
         aux q npos
     in aux l pos
-  | Branch w -> let npos = draw syst w pos scale in
-    exec [Restore] pos scale
+  | Branch w -> let npos = exec syst w pos scale in
+    turtle [Restore] pos scale
 ;;
 
+(* Cette fonction permet d'appliquer les iterations d'un axiome à partir de ses
+   rules et fait appelle à draw pour dessiner l'iteration correcte *)
 let rec show syst word n pos scale =
-  if n = 0 then draw syst word pos scale
+  if n = 0 then exec syst word pos scale
   else (match word with
       | Symb s -> show syst (syst.rules s) (n-1) pos scale
       | Seq l -> (match l with
           | [] -> failwith "sequence vide"
           | [t] -> show syst t n pos scale
           | t::q -> let last_pos = show syst t n pos scale in show syst (Seq q) n last_pos scale)
-      | Branch w -> let last_pos = show syst w n pos scale in exec [Restore] pos scale)
+      | Branch w -> let last_pos = show syst w n pos scale in turtle [Restore] pos scale)
 ;;
 
+(* Cette fonction a pour but de trouver les extremums du dessin pour en
+   déterminer une échelle adaptée pour l'affichage final dans la fenêtre *)
 let get_extremum syst n =
 
   let pos = {x = 0.; y = 0.; a = 0} in
@@ -114,22 +102,32 @@ let get_extremum syst n =
 ;;
 
 
-let turtle syst n =
+let draw_syst syst n =
+  (*window parameters*)
+  let window_scale = 800 in
+  let marge = 50 in
+
+  (*init first position to get centered drawing*)
   let (l,r,b,t) = get_extremum syst n in
   let fact = (max (r -. l) (t -. b)) in
-  let scale = (float_of_int win_scale)/.fact in
-  let first_pos = {x = -.l ; y = -.b ; a = 0} in
+  let draw_scale = (float_of_int (window_scale-(2*marge))) /.fact in
+  let centering_val = (float_of_int marge) /. draw_scale in
 
-  create_window win_scale win_scale;
+  let first_pos = {x = centering_val -. l;
+                   y = centering_val -. b;
+                   a = 0}
+  in
+
+  (*init window*)
+  create_window window_scale window_scale;
   clear_graph ();
-  set_line_width 2;
 
-  let (x,y) = get_scaled_coord first_pos scale in
+  (*moving pen to first position*)
+  let (x,y) = get_scaled_coord first_pos draw_scale in
   moveto x y;
 
-  let last_pos = show syst syst.axiom n first_pos scale in
-
-  synchronize ();
+  (*launching draw processus*)
+  let _ = show syst syst.axiom n first_pos draw_scale in
 
   close_after_event ()
 ;;

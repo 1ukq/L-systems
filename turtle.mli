@@ -20,16 +20,10 @@ val create_window : int -> int -> unit
 
 val close_after_event : unit -> unit
 
-val win_scale : int
-
 val convert_angle : int -> (float * float)
 
 val get_next_pos : position -> int -> int -> position
 
 val get_scaled_coord : position -> float -> (int * int)
 
-val draw_cmd_list : command list -> float -> position -> unit
-
-val get_extremum : command list -> (float * float * float * float)
-
-val show : command list -> unit
+val turtle : command list -> position -> float -> position
