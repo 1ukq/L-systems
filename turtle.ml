@@ -23,8 +23,15 @@ let marge = 50 ;;
 let create_window w h =
   open_graph (" " ^ string_of_int w ^ "x" ^ string_of_int h);
   set_window_title "L-SYSTEMES   -   by Lucas & Luka";
-  set_line_width 1;
+  set_line_width 2;
   auto_synchronize true
+;;
+
+let clear_window () =
+  clear_graph ();
+  set_color (rgb 239 205 255);
+  fill_rect 0 0 window_scale window_scale;
+  set_color (rgb 11 158 0)
 ;;
 
 (* Fonction de conversion d'un angle en distances unitaire sur les deux axes

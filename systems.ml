@@ -131,11 +131,11 @@ let run syst =
 
   let rec launch n =
 
-    clear_graph ();
+    clear_window () ;
     draw_syst syst n;
 
-    let status = wait_next_event [Key_pressed] in
-    match status.key with
+    let event = wait_next_event [Key_pressed] in
+    match event.key with
     |'e' -> close_graph ()
     |'+' -> launch (n+1)
     |'-' -> if n = 0 then launch n else launch (n-1)

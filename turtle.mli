@@ -21,6 +21,8 @@ val marge : int
 
 val create_window : int -> int -> unit
 
+val clear_window : unit -> unit
+
 val convert_angle : int -> (float * float)
 
 val get_next_pos : position -> int -> int -> position
