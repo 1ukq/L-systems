@@ -15,6 +15,10 @@ type position = {
 
 (** Put here any type and function implementations concerning turtle *)
 
+(*window parameters*)
+let window_scale = 800 ;;
+let marge = 50 ;;
+
 (* Fonction utiles pour Graphics *)
 let create_window w h =
   open_graph (" " ^ string_of_int w ^ "x" ^ string_of_int h);
@@ -22,13 +26,6 @@ let create_window w h =
   set_line_width 1;
   auto_synchronize true
 ;;
-
-let close_after_event () =
-  ignore (wait_next_event [Button_down ; Key_pressed]);
-  close_graph ();
-;;
-
-
 
 (* Fonction de conversion d'un angle en distances unitaire sur les deux axes
    abscisse et ordonnée*)
@@ -63,21 +60,21 @@ let get_scaled_coord pos scale =
    commandes de la turtle à partir d'une position donnée en paramètres; la
    fonction renvoie la nouvelle position *)
 let rec turtle cmd_list pos scale = match cmd_list with
-    | [] -> pos
-    | Line dist :: q -> let npos = get_next_pos pos dist 0 in
-      let (scaled_x, scaled_y) = get_scaled_coord npos scale in
-      lineto scaled_x scaled_y;
-      (*partie animation*)
-      Unix.sleepf(0.01);
-      synchronize ();
+  | [] -> pos
 
-      turtle q npos scale
-    | Move dist :: q -> let npos = get_next_pos pos dist 0 in
-      let (scaled_x, scaled_y) = get_scaled_coord npos scale in
-      moveto scaled_x scaled_y;
-      turtle q npos scale
-    | Turn angl :: q -> turtle q (get_next_pos pos 0 angl) scale
-    | Store :: q -> turtle q pos scale
-    | Restore :: q -> let (scaled_x, scaled_y) = get_scaled_coord pos scale in
-      moveto scaled_x scaled_y; turtle q pos scale
+  | Line dist :: q -> let npos = get_next_pos pos dist 0 in
+    let (scaled_x, scaled_y) = get_scaled_coord npos scale in
+    lineto scaled_x scaled_y;
+    turtle q npos scale
+
+  | Move dist :: q -> let npos = get_next_pos pos dist 0 in
+    let (scaled_x, scaled_y) = get_scaled_coord npos scale in
+    moveto scaled_x scaled_y;
+    turtle q npos scale
+  | Turn angl :: q -> turtle q (get_next_pos pos 0 angl) scale
+
+  | Store :: q -> turtle q pos scale
+
+  | Restore :: q -> let (scaled_x, scaled_y) = get_scaled_coord pos scale in
+    moveto scaled_x scaled_y; turtle q pos scale
 ;;

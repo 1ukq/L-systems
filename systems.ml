@@ -17,14 +17,16 @@ type 's system = {
 (** Put here any type and function implementations concerning systems *)
 
 (* Cette fonction permet de parcourir et de dessiner les commandes implicites du
-   word dans la fenetre (fait appelle à Turtle.exec) *)
+   word dans la fenetre (fait appelle à Turtle.turtle) *)
 let rec exec syst word pos scale = match word with
   | Symb s -> turtle (syst.interp s) pos scale
+
   | Seq l -> let rec aux l pos = match l with
       |[] -> pos
       |t::q -> let npos = (exec syst t pos scale) in
         aux q npos
     in aux l pos
+
   | Branch w -> let npos = exec syst w pos scale in
     turtle [Restore] pos scale
 ;;
@@ -35,10 +37,12 @@ let rec show syst word n pos scale =
   if n = 0 then exec syst word pos scale
   else (match word with
       | Symb s -> show syst (syst.rules s) (n-1) pos scale
+
       | Seq l -> (match l with
           | [] -> failwith "sequence vide"
           | [t] -> show syst t n pos scale
           | t::q -> let last_pos = show syst t n pos scale in show syst (Seq q) n last_pos scale)
+
       | Branch w -> let last_pos = show syst w n pos scale in turtle [Restore] pos scale)
 ;;
 
@@ -103,10 +107,6 @@ let get_extremum syst n =
 
 
 let draw_syst syst n =
-  (*window parameters*)
-  let window_scale = 800 in
-  let marge = 50 in
-
   (*init first position to get centered drawing*)
   let (l,r,b,t) = get_extremum syst n in
   let fact = (max (r -. l) (t -. b)) in
@@ -118,16 +118,27 @@ let draw_syst syst n =
                    a = 0}
   in
 
-  (*init window*)
-  create_window window_scale window_scale;
-  clear_graph ();
-
   (*moving pen to first position*)
   let (x,y) = get_scaled_coord first_pos draw_scale in
   moveto x y;
 
   (*launching draw processus*)
-  let _ = show syst syst.axiom n first_pos draw_scale in
+  let _ = show syst syst.axiom n first_pos draw_scale in ()
+;;
 
-  close_after_event ()
+let run syst =
+  create_window window_scale window_scale;
+
+  let rec launch n =
+
+    clear_graph ();
+    draw_syst syst n;
+
+    let status = wait_next_event [Key_pressed] in
+    match status.key with
+    |'e' -> close_graph ()
+    |'+' -> launch (n+1)
+    |'-' -> if n = 0 then launch n else launch (n-1)
+    |_ -> ()
+  in launch 0
 ;;

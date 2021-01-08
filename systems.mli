@@ -19,3 +19,5 @@ val show : 's system -> 's word -> int -> Turtle.position -> float -> Turtle.pos
 val get_extremum : 's system -> int -> float*float*float*float
 
 val draw_syst : 's system -> int -> unit
+
+val run : 's system -> unit
