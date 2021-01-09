@@ -35,12 +35,9 @@ let reset_window n =
   fill_rect 0 0 window_scale window_scale;
 
   (*iteration number (top left corner)*)
-  set_color (rgb 0 0 0);
+  set_color black;
   moveto 10 (window_scale - 20);
   draw_string (string_of_int n);
-
-  (*drawing color for system*)
-  set_color (rgb 11 158 0)
 ;;
 
 (* Fonction de conversion d'un angle en distances unitaire sur les deux axes
@@ -71,6 +68,16 @@ let get_scaled_coord pos scale =
   (x,y)
 ;;
 
+(* Fonction pour les variations de couleurs *)
+let change_color coord =
+  let (x,y) = coord in
+  let fact = 255. /. (float_of_int window_scale) in
+  let r = (float_of_int x)*.fact in
+  let g = (float_of_int y)*.fact in
+  let b = r*.g/.255. in
+  set_color (rgb (int_of_float r) (int_of_float g) (int_of_float b))
+;;
+
 
 (* Fonction réalisant les execution de graphics adaptées pour une liste de
    commandes de la turtle à partir d'une position donnée en paramètres; la
@@ -80,6 +87,7 @@ let rec turtle cmd_list pos scale = match cmd_list with
 
   | Line dist :: q -> let npos = get_next_pos pos dist 0 in
     let (scaled_x, scaled_y) = get_scaled_coord npos scale in
+    change_color (scaled_x, scaled_y);
     lineto scaled_x scaled_y;
     turtle q npos scale
 

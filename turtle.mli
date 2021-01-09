@@ -29,4 +29,6 @@ val get_next_pos : position -> int -> int -> position
 
 val get_scaled_coord : position -> float -> (int * int)
 
+val change_color : int*int -> unit
+
 val turtle : command list -> position -> float -> position
