@@ -27,10 +27,19 @@ let create_window w h =
   auto_synchronize true
 ;;
 
-let clear_window () =
+let reset_window n =
   clear_graph ();
+  
+  (*background color*)
   set_color (rgb 239 205 255);
   fill_rect 0 0 window_scale window_scale;
+
+  (*iteration number (top left corner)*)
+  set_color (rgb 0 0 0);
+  moveto 10 (window_scale - 20);
+  draw_string (string_of_int n);
+
+  (*drawing color for system*)
   set_color (rgb 11 158 0)
 ;;
 
