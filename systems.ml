@@ -130,16 +130,16 @@ let run syst =
   create_window window_scale window_scale;
 
   let rec launch n =
-
+    let handle_user_cmd () =
+      let event = wait_next_event [Key_pressed] in
+      match event.key with
+      |'e' -> close_graph ()
+      |'+' -> launch (n+1)
+      |'-' -> if n = 0 then launch n else launch (n-1)
+      |_ -> launch n
+    in
     reset_window n ;
     draw_syst syst n;
-
-    let event = wait_next_event [Key_pressed] in
-    match event.key with
-    |'e' -> close_graph ()
-    |'q' -> close_graph ()
-    |'+' -> launch (n+1)
-    |'-' -> if n = 0 then launch n else launch (n-1)
-    |_ -> ()
-  in launch 0
+    handle_user_cmd ()
+    in launch 0
 ;;
