@@ -29,9 +29,9 @@ let create_window w h =
 
 let reset_window n =
   clear_graph ();
-  
+
   (*background color*)
-  set_color (rgb 239 205 255);
+  set_color (rgb 243 181 255);
   fill_rect 0 0 window_scale window_scale;
 
   (*iteration number (top left corner)*)

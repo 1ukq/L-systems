@@ -47,65 +47,85 @@ let rec show syst word n pos scale =
 ;;
 
 (* Cette fonction a pour but de trouver les extremums du dessin pour en
-   déterminer une échelle adaptée pour l'affichage final dans la fenêtre *)
+   déterminer une échelle adaptée pour l'affichage final dans la fenêtre; pour
+   cela, on realise un processus similaire à celui utilisé lors du dessin *)
 let get_extremum syst n =
 
   let pos = {x = 0.; y = 0.; a = 0} in
 
+  (*pour la clareté du processus nous utilisons ici des references; on aurait
+    pu mettre des variables en argument des fonctions pour éviter de les
+    utiliser mais la notation paraît trop lourde*)
   let l = ref pos.x in
   let b = ref pos.y in
   let r = ref pos.x in
   let t = ref pos.y in
 
-  let rec draw_hidden syst word pos = match word with
-    | Symb s -> let rec parcours_liste wl pos = match wl with
-        | [] -> pos
-        | Line dist :: q ->
-        (if pos.x < !l then
-           l := pos.x
-         else if pos.y < !b then
-           b := pos.y
-         else if pos.x > !r then
-           r := pos.x
-         else if pos.y > !t then
-           t := pos.y);
-          let npos = get_next_pos pos dist 0 in
-          (if npos.x < !l then
-             l := npos.x
-           else if npos.y < !b then
-             b := npos.y
-           else if npos.x > !r then
-             r := npos.x
-           else if npos.y > !t then
-             t := npos.y);
-          parcours_liste q npos
-        | Move dist :: q -> let npos = get_next_pos pos dist 0 in
-          parcours_liste q npos
-        | Turn angl :: q -> parcours_liste q (get_next_pos pos 0 angl)
-        | _ :: q -> parcours_liste q pos
-      in parcours_liste (syst.interp s) pos
+  let maj_extremums pos =
+    if pos.x < !l then
+      l := pos.x
+    else if pos.y < !b then
+      b := pos.y
+    else if pos.x > !r then
+      r := pos.x
+    else if pos.y > !t then
+      t := pos.y
+  in
+
+  (*cette fonction a pour but de simuler Turtle.turtle sans rien dessiner*)
+  let rec turtle cmd_list pos = match cmd_list with
+    | [] -> pos
+
+    | Line dist :: q -> let npos = get_next_pos pos dist 0 in
+      maj_extremums pos; maj_extremums npos;
+      turtle q npos
+
+    | Move dist :: q -> let npos = get_next_pos pos dist 0 in
+      turtle q npos
+    | Turn angl :: q -> turtle q (get_next_pos pos 0 angl)
+
+    | Store :: q -> turtle q pos
+
+    | Restore :: q -> turtle q pos
+  in
+
+  (*cette fonction facilite la transition entre show_hidden ci-dessous et
+  turtle ci-dessus*)
+  let rec exec syst word pos = match word with
+    | Symb s -> turtle (syst.interp s) pos
+
     | Seq l -> let rec aux l pos = match l with
         |[] -> pos
-        |t::q -> let npos = (draw_hidden syst t pos) in
+        |t::q -> let npos = (exec syst t pos) in
           aux q npos
       in aux l pos
-    | Branch w -> pos
+
+    | Branch w -> let npos = exec syst w pos in
+      turtle [Restore] pos
   in
-  let rec iter syst word n pos =
-    if n = 0 then  draw_hidden syst word pos
+
+  (*cette fonction a pour but de simuler Systems.show en faisant appel aux
+    bonnes fonctions*)
+  let rec show_hidden syst word n pos =
+    if n = 0 then exec syst word pos
     else (match word with
-        | Symb s -> iter syst (syst.rules s) (n-1) pos
+        | Symb s -> show_hidden syst (syst.rules s) (n-1) pos
+
         | Seq l -> (match l with
             | [] -> failwith "sequence vide"
-            | [t] -> iter syst t n pos
-            | t::q -> let last_pos = iter syst t n pos in iter syst (Seq q) n last_pos)
-        | Branch w -> let last_pos = iter syst w n pos in pos)
-  in let last_pos = iter syst syst.axiom n pos
+            | [t] -> show_hidden syst t n pos
+            | t::q -> let last_pos = show_hidden syst t n pos in
+              show_hidden syst (Seq q) n last_pos)
 
-  in (!l,!r,!b,!t)
+        | Branch w -> let last_pos = show_hidden syst w n pos in turtle [Restore] pos)
+  in
+  let _ = show_hidden syst syst.axiom n pos in
+
+  (!l,!r,!b,!t)
 ;;
 
-
+(*Cette fonction lance le dessin à partir du bon point de départ et à la bonne
+  échelle*)
 let draw_syst syst n =
   (*init first position to get centered drawing*)
   let (l,r,b,t) = get_extremum syst n in
@@ -126,6 +146,8 @@ let draw_syst syst n =
   let _ = show syst syst.axiom n first_pos draw_scale in ()
 ;;
 
+(*Cette fonction gère la fenêtre et les commandes de l'utilisateur et lance
+  le Systems.draw_syst adapté*)
 let run syst =
   create_window window_scale window_scale;
 
