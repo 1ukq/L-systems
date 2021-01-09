@@ -1,14 +1,10 @@
 open Pervasives
+open Systems
 
 type 's element = 
     | Normal of 's
     | Bracket_open of 's
     | Bracket_close of 's
-
-type 's word =
-  | Symb of 's
-  | Seq of 's word list
-  | Branch of 's word
 
 
 (*"Transforme" une chaîne de caractère en element list. Chaque élément de la liste est un caractère de str*)
@@ -75,10 +71,6 @@ let rec get_lines ic n1 n2 l =
         close_in_noerr ic;
         raise e
 
-let get_rules file_name = let ic = open_in file_name in get_lines ic 1 0 [];;
-
-let get_interp file_name = let ic = open_in file_name in get_lines ic 2 0 [];;
-
 
 (*Construit un type word à partir d'une liste d'éléments 's: 's element -> 's word = <fun>*)
 (*
@@ -99,8 +91,8 @@ let build_word ax =
     let rec build_word_aux l acc =
         match l with
             | [] -> acc
-            | e :: l' -> if e = '[' then concat_words acc (Branch (build_word_aux l' (Seq [])))
-                         else if e = ']' then acc
+            | e :: l' -> if e = '[' then concat_words acc (build_word_aux l' (Seq []))
+                         else if e = ']' then concat_words (Branch acc) (build_word_aux l' (Seq []))
                          else build_word_aux l' (concat_words acc (Symb e))
     in
     build_word_aux ax (Seq []);;
@@ -147,17 +139,26 @@ let rec interp l s =
         | _ :: q -> failwith "Couple de la liste mal formé";;
 
    
-let build_rewrites_rules ic s =
-    let rsl = get_lines ic 1 0 [] in
+let build_rewrites_rules s rsl =
     let rcl = split_all_on_space rsl [] in
     rewrites_rules rcl s;;
 
-let build_inter ic s =
-    let isl = get_lines ic 2 0 [] in
+let build_inter s isl =
     let icl = split_all_on_space isl [] in
     interp icl s;;
 
-let build_axiom ic = 
-    let axiom_s = get_line_ax ic in
+let build_axiom axiom_s = 
+    (*let axiom_s = get_line_ax ic in*)
     let axiom_l = explode axiom_s in
     build_word axiom_l;;
+
+let build_system file_name =
+    let ic1 = open_in file_name in
+    let ic2 = open_in file_name in
+    let axiom_s = get_line_ax ic1 in
+    let rsl = get_lines ic1 1 0 [] in
+    let isl = get_lines ic2 2 0 [] in
+    let ax = build_axiom axiom_s in
+    let r s = build_rewrites_rules s rsl in
+    let i s = build_inter s isl in
+    {axiom = ax; rules = r; interp = i};;
