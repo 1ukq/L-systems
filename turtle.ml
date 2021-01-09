@@ -30,10 +30,6 @@ let create_window w h =
 let reset_window n =
   clear_graph ();
 
-  (*background color*)
-  set_color (rgb 243 181 255);
-  fill_rect 0 0 window_scale window_scale;
-
   (*iteration number (top left corner)*)
   set_color black;
   moveto 10 (window_scale - 20);
