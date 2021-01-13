@@ -24,6 +24,7 @@ Nous avons ajouté quelques améliorations visuelles au projet original:
 * Il est facile de changer le nombre d'itérations d'un système à l'aide des touches `+` et `-` du clavier (`e` permet de quitter le fenêtre).
 
 ## Problèmes et propositions
-* Un fichier en `.sys` doit finir par deux retour à la ligne pour être correctement interprété par le parser (tous les fichiers dans `examples` ont déjà été modifiés).
+* Les commandes ne sont appliquées que lorsque le système a fini d'être entièrement dessiné.
+* Il aurait fallu garder en mémoire la sequence de words affichée pour passer plus rapidement à l'affichage suivant lorsque l'utilisateur appuie sur `+` (il nous aurait dans ce cas suffit d'appliquer une itération aux élément de la liste au lieu de refaire tous le processus décrit plus haut).
 * On aurait voulu ajouter une animation lors du dessin mais pour de 'grandes' itérations, l'animation devenait inintéressante car déjà faite en partie par le module `Graphics` qui a du mal à tout afficher instantanément.
 * Il aurait été intéressant d'ajouter la possibilité pour l'utilisateur de placer des 'miroirs' qui joueraient sur la symétrie de l'affichage par rapport à une droite placée par l'utilisateur. Pour cela il aurait 'suffit' d'appliquer les mêmes commandes aux symétriques des points par rapport à cette droite lors d'un `lineto`.
