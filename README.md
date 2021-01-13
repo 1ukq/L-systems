@@ -1,6 +1,10 @@
 Projet PF5 2020 : L-systèmes
 ============================
 
+## Modalités de rendu et d'évaluation
+
+Voir [CONSIGNES.md](CONSIGNES.md)
+
 ## Prérequis à installer
 
 Voir [INSTALL.md](../INSTALL.md)
