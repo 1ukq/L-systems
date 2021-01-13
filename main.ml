@@ -5,10 +5,16 @@ open Lsystems
 *)
 
 let usage = (* Entete du message d'aide pour --help *)
-  "Interpretation de L-systemes et dessins fractals
-   Vous pouvez utiliser la touche '+' pour monter 
-   dans les itérations et '-' pour descendre.
-   Utilisez la touche 'e' pour quitter."
+  "
+  Interpretation de L-systemes et dessins fractals
+
+  Pour lancer la visualisation faire './run path' où path désigne le chemin
+  vers le fichier .sys désiré.
+  - Appuyez sur '+' pour incrémenter le nombre d'itérations
+  - Appuyez sur '-' pour décrémenter le nombre d'itérations
+  - Appuyez sur 'e' pour quitter
+
+  "
 
 let action_what () = Printf.printf "%s\n" usage; exit 0
 
@@ -20,7 +26,7 @@ let extra_arg_action = fun s -> Systems.run (Parser.build_system s)
 
 let main () =
   Arg.parse cmdline_options extra_arg_action usage;
-  print_string "Pour l'instant je ne fais rien\n"
+  print_string "Si aucune fenêtre ne s'est ouverte faire './run --help'\n"
 
 (** On ne lance ce main que dans le cas d'un programme autonome
     (c'est-à-dire que l'on est pas dans un "toplevel" ocaml interactif).
