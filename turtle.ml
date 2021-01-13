@@ -40,7 +40,7 @@ let reset_window n =
 (* Fonction de conversion d'un angle en distances unitaire sur les deux axes
    abscisse et ordonnée*)
 let convert_angle a =
-  let conv_deg_rad = 3.14 /. 180. in
+  let conv_deg_rad = Float.pi /. 180. in
   let angle_float = float_of_int a in
   let rad_a = angle_float *. conv_deg_rad in
   (-.(sin rad_a), cos rad_a)
