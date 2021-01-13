@@ -23,6 +23,7 @@ let marge = 50 ;;
 let create_window w h =
   open_graph (" " ^ string_of_int w ^ "x" ^ string_of_int h);
   set_window_title "L-SYSTEMES   -   by Lucas & Luka";
+  set_font "-*-fixed-medium-r-semicondensed-*-25-*-*-*-*-*-iso8859-1";
   set_line_width 2;
   auto_synchronize true
 ;;
@@ -32,7 +33,7 @@ let reset_window n =
 
   (*iteration number (top left corner)*)
   set_color black;
-  moveto 10 (window_scale - 20);
+  moveto 10 (window_scale - 35);
   draw_string (string_of_int n);
 ;;
 
