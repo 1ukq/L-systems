@@ -16,6 +16,7 @@ Pour lancer le projet suivez la procédure suivante :
 
 ## Fonctionnement global
 Lorsque l'utilisateur lance `./run path` où path représente le chemin vers le fichier du système 'syst', le fichier est lu et traduit par les fonctions dans le `parser.ml`. Le système syst qui en résulte est donné à la fonction `run` dans `systems.ml` qui lit syst.axiom. À chaque élément de syst.axiom rencontré, on calcule les n itérations de cet élément récursivement en décrémentant n. Pour chaque élément atteint lorsque n = 0, on traduit l'élément en commande pour turtle et on fait appelle à la fonction `turtle` dans `turtle.ml` qui se charge d'exécuter la commande désirée avec le module `Graphics`.
+Mise à l'échelle: pour mettre le dessin à la bonne échelle, on suit le même processus que cité ci-dessus mais sans tracer aucun traits sur la fenêtre. On cherche les quatre extremums (max et min sur l'axe des abscisses et l'axe des ordonnées) en comparant les extremums temporaires aux positions trouvées. Enfin à partir des extremums trouvés on calcule une échelle qui influencera les positions dessin du système pour que celui-ci soit bien dans la fenêtre. 
 
 ## Extras
 Nous avons ajouté quelques améliorations visuelles au projet original:
@@ -25,6 +26,6 @@ Nous avons ajouté quelques améliorations visuelles au projet original:
 
 ## Problèmes et propositions
 * Les commandes ne sont appliquées que lorsque le système a fini d'être entièrement dessiné.
-* Il aurait fallu garder en mémoire la sequence de words affichée pour passer plus rapidement à l'affichage suivant lorsque l'utilisateur appuie sur `+` (il nous aurait dans ce cas suffit d'appliquer une itération aux élément de la liste au lieu de refaire tous le processus décrit plus haut).
+* Il aurait fallu garder en mémoire la séquence de words affichée pour passer plus rapidement à l'affichage suivant lorsque l'utilisateur appuie sur `+` (il nous aurait dans ce cas suffit d'appliquer une itération aux élément de la liste au lieu de refaire tous le processus décrit plus haut) ainsi, nous aurions pu aller vraisemblablement plus loin dans le nombre d'itérations.
 * On aurait voulu ajouter une animation lors du dessin mais pour de 'grandes' itérations, l'animation devenait inintéressante car déjà faite en partie par le module `Graphics` qui a du mal à tout afficher instantanément.
 * Il aurait été intéressant d'ajouter la possibilité pour l'utilisateur de placer des 'miroirs' qui joueraient sur la symétrie de l'affichage par rapport à une droite placée par l'utilisateur. Pour cela il aurait 'suffit' d'appliquer les mêmes commandes aux symétriques des points par rapport à cette droite lors d'un `lineto`.
