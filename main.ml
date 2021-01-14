@@ -8,8 +8,9 @@ let usage = (* Entete du message d'aide pour --help *)
   "
   Interpretation de L-systemes et dessins fractals
 
-  Pour lancer la visualisation faire './run path' où path désigne le chemin
-  vers le fichier .sys désiré.
+  Pour lancer la visualisation faire './run path1 path2 ...' où path1, path2 ...
+  désignent des chemins vers les fichiers .sys désirés (mettre au moins un
+  chemin).
   - Appuyez sur '+' pour incrémenter le nombre d'itérations
   - Appuyez sur '-' pour décrémenter le nombre d'itérations
   - Appuyez sur 'e' pour quitter
