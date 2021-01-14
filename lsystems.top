@@ -7,7 +7,6 @@
      Ou peut-être même directement ./lsystems.top
 *)
 #load "graphics.cma"
-#load "unix.cma"
 #directory "_build/default/";;
 #directory "_build/default/.lsystems.objs";;
 #directory "_build/default/.lsystems.objs/byte";;
